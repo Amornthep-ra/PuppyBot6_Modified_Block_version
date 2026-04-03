@@ -8,7 +8,7 @@ module.exports = {
   email: "print081@gmail.com",
   git: "https://github.com/Amornthep-ra/PuppyBot6_Modified_Block_version.git",
   download_url:
-    "https://raw.githubusercontent.com/Amornthep-ra/PuppyBot6_Modified_Block_version_zip/main/PuppyBot6_Modified_Block_version.zip",
+    "https://github.com/Amornthep-ra/PuppyBot6_Modified_Block_version/releases/download/v1.0.0/PuppyBot6_Modified_Block_version.zip",
   image: "/static/cover.jpg",
   version: "1.0.0",
   fqbn: "rp2040:rp2040:PuppyBot6_Modified_Block_version",
