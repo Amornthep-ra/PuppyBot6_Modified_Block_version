@@ -461,6 +461,43 @@ static inline uint16_t sw1_gyro_color()
   return 0x5DFF; // light sky blue
 }
 
+static bool sw1_require_gyro_countdown = false;
+
+static inline void sw1_enable_gyro_countdown()
+{
+  sw1_require_gyro_countdown = true;
+}
+
+static inline bool sw1_countdown_active(unsigned long titleStartMs)
+{
+  return sw1_require_gyro_countdown && ((millis() - titleStartMs) < 5000UL);
+}
+
+static inline bool sw1_accept_press(unsigned long titleStartMs, bool *holdLock)
+{
+  bool rawPressed = (digitalRead(swpin) == 0);
+  if (!rawPressed)
+  {
+    if (holdLock != NULL)
+      *holdLock = false;
+    return false;
+  }
+
+  if (sw1_countdown_active(titleStartMs))
+  {
+    if (holdLock != NULL)
+      *holdLock = true;
+    return false;
+  }
+
+  if (holdLock != NULL && *holdLock)
+  {
+    return false;
+  }
+
+  return true;
+}
+
 static inline void sw1_draw_countdown_title(const String &title, int titleY, uint16_t titleColor, unsigned long titleStartMs)
 {
   unsigned long elapsed = millis() - titleStartMs;
@@ -470,7 +507,7 @@ static inline void sw1_draw_countdown_title(const String &title, int titleY, uin
   static const uint16_t kSw1TitlePulseColors[6] = {
       ST77XX_YELLOW, ST77XX_CYAN, ST77XX_GREEN, 0xF81F, 0xFD20, 0xB81F};
 
-  if (elapsed < 5000UL)
+  if (sw1_require_gyro_countdown && elapsed < 5000UL)
   {
     int remain = 5 - (int)(elapsed / 1000UL);
     if (remain < 1)
@@ -487,7 +524,7 @@ static inline void sw1_draw_countdown_title(const String &title, int titleY, uin
   int displayX = (tft_.width() - ((int)displayText.length() * 6 * displaySize)) / 2;
   if (displayX < 0)
     displayX = 0;
-  if (elapsed < 6500UL)
+  if (sw1_require_gyro_countdown && elapsed < 6500UL)
   {
     int clearY = titleY - 13;
     if (clearY < 0)
@@ -516,6 +553,7 @@ void wait_SW1_one(int feedbackMode = 1, int buzzerHz = 1000, int delayMs = 200)
   const int valueGY = valueGroupTopY + 20;
   static const uint16_t kSw1TitleColors[4] = {ST77XX_YELLOW, ST77XX_CYAN, ST77XX_GREEN, 0xF81F};
   unsigned long sw1TitleStartMs = millis();
+  bool sw1HoldLock = false;
   tft_.setTextSize(2);
   tft_.fillScreen(ST77XX_BLACK);
   tft_.setTextColor(ST77XX_WHITE, ST77XX_BLACK);
@@ -533,20 +571,20 @@ void wait_SW1_one(int feedbackMode = 1, int buzzerHz = 1000, int delayMs = 200)
         printnumber(50, valueAY, "A" + String(i) + "=", ADC(i), 2, sw1_analog_color(i), ST77XX_BLACK);
         printnumber(50, valueGY, "G=", (int)Con_yaw_loop1, 2, sw1_gyro_color(), ST77XX_BLACK);
 
-        if (digitalRead(swpin) == 0)
+        if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
         {
           pinMode(swpin, OUTPUT);
           break;
         }
       }
-      if (digitalRead(swpin) == 0)
+      if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
       {
         pinMode(swpin, OUTPUT);
         break;
       }
     }
 
-  } while (digitalRead(swpin) == 1);
+  } while (!sw1_accept_press(sw1TitleStartMs, &sw1HoldLock));
   pinMode(swpin, OUTPUT);
   sw1_feedback_apply(feedbackMode, buzzerHz, delayMs);
 }
@@ -556,6 +594,7 @@ void wait_SW1(int feedbackMode = 1, int buzzerHz = 1000, int delayMs = 200)
   pinMode(swpin, INPUT_PULLUP);
   const String sw1Title = "PrinceBot SW1 Press";
   unsigned long sw1TitleStartMs = millis();
+  bool sw1HoldLock = false;
 
   tft_.fillScreen(ST77XX_BLACK);
   tft_.setTextColor(ST77XX_WHITE, ST77XX_BLACK);
@@ -564,84 +603,84 @@ void wait_SW1(int feedbackMode = 1, int buzzerHz = 1000, int delayMs = 200)
     tft_.setTextSize(2);
     tft_.setTextColor(sw1_analog_color(0), ST77XX_BLACK);
     drawString("0=" + String(ADC(0)) + "  ", 0, 0);
-    if (digitalRead(swpin) == 0)
+    if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
     {
       pinMode(swpin, OUTPUT);
       break;
     }
     tft_.setTextColor(sw1_analog_color(1), ST77XX_BLACK);
     drawString("1=" + String(ADC(1)) + "  ", 80, 0);
-    if (digitalRead(swpin) == 0)
+    if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
     {
       pinMode(swpin, OUTPUT);
       break;
     }
     tft_.setTextColor(sw1_analog_color(2), ST77XX_BLACK);
     drawString("2=" + String(ADC(2)) + "  ", 0, 16);
-    if (digitalRead(swpin) == 0)
+    if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
     {
       pinMode(swpin, OUTPUT);
       break;
     }
     tft_.setTextColor(sw1_analog_color(3), ST77XX_BLACK);
     drawString("3=" + String(ADC(3)) + "  ", 80, 16);
-    if (digitalRead(swpin) == 0)
+    if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
     {
       pinMode(swpin, OUTPUT);
       break;
     }
     tft_.setTextColor(sw1_analog_color(4), ST77XX_BLACK);
     drawString("4=" + String(ADC(4)) + "  ", 0, 32);
-    if (digitalRead(swpin) == 0)
+    if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
     {
       pinMode(swpin, OUTPUT);
       break;
     }
     tft_.setTextColor(sw1_analog_color(5), ST77XX_BLACK);
     drawString("5=" + String(ADC(5)) + "  ", 80, 32);
-    if (digitalRead(swpin) == 0)
+    if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
     {
       pinMode(swpin, OUTPUT);
       break;
     }
     tft_.setTextColor(sw1_analog_color(6), ST77XX_BLACK);
     drawString("6=" + String(ADC(6)) + "  ", 0, 48);
-    if (digitalRead(swpin) == 0)
+    if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
     {
       pinMode(swpin, OUTPUT);
       break;
     }
     tft_.setTextColor(sw1_analog_color(7), ST77XX_BLACK);
     drawString("7=" + String(ADC(7)) + "  ", 80, 48);
-    if (digitalRead(swpin) == 0)
+    if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
     {
       pinMode(swpin, OUTPUT);
       break;
     }
     tft_.setTextColor(sw1_analog_color(8), ST77XX_BLACK);
     drawString("8=" + String(ADC(8)) + "  ", 0, 64);
-    if (digitalRead(swpin) == 0)
+    if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
     {
       pinMode(swpin, OUTPUT);
       break;
     }
     tft_.setTextColor(sw1_analog_color(9), ST77XX_BLACK);
     drawString("9=" + String(ADC(9)) + "  ", 80, 64);
-    if (digitalRead(swpin) == 0)
+    if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
     {
       pinMode(swpin, OUTPUT);
       break;
     }
     tft_.setTextColor(sw1_analog_color(15), ST77XX_BLACK);
     drawString("15=" + String(ADC(15)) + "  ", 0, 80);
-    if (digitalRead(swpin) == 0)
+    if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
     {
       pinMode(swpin, OUTPUT);
       break;
     }
     tft_.setTextColor(sw1_gyro_color(), ST77XX_BLACK);
     drawString("G=" + String((int)Con_yaw_loop1) + "  ", 80, 80);
-    if (digitalRead(swpin) == 0)
+    if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
     {
       pinMode(swpin, OUTPUT);
       break;
@@ -652,7 +691,7 @@ void wait_SW1(int feedbackMode = 1, int buzzerHz = 1000, int delayMs = 200)
       sw1_draw_countdown_title(sw1Title, 105, ST77XX_BLUE, sw1TitleStartMs);
       tft_.setTextColor(ST77XX_WHITE, ST77XX_BLACK);
     }
-  } while (digitalRead(swpin) == 1);
+  } while (!sw1_accept_press(sw1TitleStartMs, &sw1HoldLock));
   pinMode(swpin, OUTPUT);
   // buzzer(500,100);
   // delay(200);
@@ -671,6 +710,7 @@ void wait_SW1_ALL(int feedbackMode = 1, int buzzerHz = 1000, int delayMs = 200)
   const uint16_t sw1TitleBright = ST77XX_YELLOW;
   const uint16_t sw1TitleDim = 0x7BEF;
   unsigned long sw1TitleStartMs = millis();
+  bool sw1HoldLock = false;
   unsigned long muxAnalogLastStepMs = millis();
   int muxAnalogIndex = 0;
 
@@ -685,119 +725,119 @@ void wait_SW1_ALL(int feedbackMode = 1, int buzzerHz = 1000, int delayMs = 200)
     {
       tft_.setTextColor(sw1_analog_color(0), ST77XX_BLACK);
       drawString("A0=" + String(ADC(0)) + "  ", 0, 0);
-      if (digitalRead(swpin) == 0)
+    if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
       {
         pinMode(swpin, OUTPUT);
         break;
       }
       tft_.setTextColor(sw1_analog_color(1), ST77XX_BLACK);
       drawString("A1=" + String(ADC(1)) + "  ", 50, 0);
-      if (digitalRead(swpin) == 0)
+      if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
       {
         pinMode(swpin, OUTPUT);
         break;
       }
       tft_.setTextColor(sw1_analog_color(2), ST77XX_BLACK);
       drawString("A2=" + String(ADC(2)) + "  ", 100, 0);
-      if (digitalRead(swpin) == 0)
+      if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
       {
         pinMode(swpin, OUTPUT);
         break;
       }
       tft_.setTextColor(sw1_analog_color(3), ST77XX_BLACK);
       drawString("A3=" + String(ADC(3)) + "  ", 0, 10);
-      if (digitalRead(swpin) == 0)
+      if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
       {
         pinMode(swpin, OUTPUT);
         break;
       }
       tft_.setTextColor(sw1_analog_color(4), ST77XX_BLACK);
       drawString("A4=" + String(ADC(4)) + "  ", 50, 10);
-      if (digitalRead(swpin) == 0)
+      if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
       {
         pinMode(swpin, OUTPUT);
         break;
       }
       tft_.setTextColor(sw1_analog_color(5), ST77XX_BLACK);
       drawString("A5=" + String(ADC(5)) + "  ", 100, 10);
-      if (digitalRead(swpin) == 0)
+      if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
       {
         pinMode(swpin, OUTPUT);
         break;
       }
       tft_.setTextColor(sw1_analog_color(6), ST77XX_BLACK);
       drawString("A6=" + String(ADC(6)) + "  ", 0, 20);
-      if (digitalRead(swpin) == 0)
+      if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
       {
         pinMode(swpin, OUTPUT);
         break;
       }
       tft_.setTextColor(sw1_analog_color(7), ST77XX_BLACK);
       drawString("A7=" + String(ADC(7)) + "  ", 50, 20);
-      if (digitalRead(swpin) == 0)
+      if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
       {
         pinMode(swpin, OUTPUT);
         break;
       }
       tft_.setTextColor(sw1_analog_color(8), ST77XX_BLACK);
       drawString("A8=" + String(ADC(8)) + "  ", 100, 20);
-      if (digitalRead(swpin) == 0)
+      if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
       {
         pinMode(swpin, OUTPUT);
         break;
       }
       tft_.setTextColor(sw1_analog_color(9), ST77XX_BLACK);
       drawString("A9=" + String(ADC(9)) + "  ", 0, 30);
-      if (digitalRead(swpin) == 0)
+      if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
       {
         pinMode(swpin, OUTPUT);
         break;
       }
       tft_.setTextColor(sw1_analog_color(10), ST77XX_BLACK);
       drawString("A10=" + String(ADC(10)) + "  ", 50, 30);
-      if (digitalRead(swpin) == 0)
+      if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
       {
         pinMode(swpin, OUTPUT);
         break;
       }
       tft_.setTextColor(sw1_analog_color(11), ST77XX_BLACK);
       drawString("A11=" + String(ADC(11)) + "  ", 100, 30);
-      if (digitalRead(swpin) == 0)
+      if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
       {
         pinMode(swpin, OUTPUT);
         break;
       }
       tft_.setTextColor(sw1_analog_color(12), ST77XX_BLACK);
       drawString("A12=" + String(ADC(12)) + "  ", 0, 40);
-      if (digitalRead(swpin) == 0)
+      if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
       {
         pinMode(swpin, OUTPUT);
         break;
       }
       tft_.setTextColor(sw1_analog_color(13), ST77XX_BLACK);
       drawString("A13=" + String(ADC(13)) + "  ", 50, 40);
-      if (digitalRead(swpin) == 0)
+      if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
       {
         pinMode(swpin, OUTPUT);
         break;
       }
       tft_.setTextColor(sw1_analog_color(14), ST77XX_BLACK);
       drawString("A14=" + String(ADC(14)) + "  ", 100, 40);
-      if (digitalRead(swpin) == 0)
+      if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
       {
         pinMode(swpin, OUTPUT);
         break;
       }
       tft_.setTextColor(sw1_analog_color(15), ST77XX_BLACK);
       drawString("A15=" + String(ADC(15)) + "  ", 0, 50);
-      if (digitalRead(swpin) == 0)
+      if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
       {
         pinMode(swpin, OUTPUT);
         break;
       }
       tft_.setTextColor(sw1_gyro_color(), ST77XX_BLACK);
       drawString("G=" + String(Con_yaw_loop1) + "  ", 50, 50);
-      if (digitalRead(swpin) == 0)
+      if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
       {
         pinMode(swpin, OUTPUT);
         break;
@@ -833,42 +873,42 @@ void wait_SW1_ALL(int feedbackMode = 1, int buzzerHz = 1000, int delayMs = 200)
       tft_.setTextSize(1);
       tft_.setTextColor(sw1_analog_color(analogIndex), ST77XX_BLACK);
       drawString("A" + String(analogIndex) + "=" + String(ADC(analogIndex)) + "   ", 0, 0);
-      if (digitalRead(swpin) == 0)
+      if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
       {
         pinMode(swpin, OUTPUT);
         break;
       }
       tft_.setTextColor(sw1_analog_color(analogIndexNext), ST77XX_BLACK);
       drawString("A" + String(analogIndexNext) + "=" + String(ADC(analogIndexNext)) + "   ", 50, 0);
-      if (digitalRead(swpin) == 0)
+      if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
       {
         pinMode(swpin, OUTPUT);
         break;
       }
       tft_.setTextColor(sw1_analog_color(analogIndexNext2), ST77XX_BLACK);
       drawString("A" + String(analogIndexNext2) + "=" + String(ADC(analogIndexNext2)) + "   ", 100, 0);
-      if (digitalRead(swpin) == 0)
+      if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
       {
         pinMode(swpin, OUTPUT);
         break;
       }
       tft_.setTextColor(sw1_analog_color(analogIndexNext3), ST77XX_BLACK);
       drawString("A" + String(analogIndexNext3) + "=" + String(ADC(analogIndexNext3)) + "   ", 0, 12);
-      if (digitalRead(swpin) == 0)
+      if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
       {
         pinMode(swpin, OUTPUT);
         break;
       }
       tft_.setTextColor(sw1_analog_color(analogIndexNext4), ST77XX_BLACK);
       drawString("A" + String(analogIndexNext4) + "=" + String(ADC(analogIndexNext4)) + "   ", 50, 12);
-      if (digitalRead(swpin) == 0)
+      if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
       {
         pinMode(swpin, OUTPUT);
         break;
       }
       tft_.setTextColor(sw1_analog_color(analogIndexNext5), ST77XX_BLACK);
       drawString("A" + String(analogIndexNext5) + "=" + String(ADC(analogIndexNext5)) + "   ", 100, 12);
-      if (digitalRead(swpin) == 0)
+      if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
       {
         pinMode(swpin, OUTPUT);
         break;
@@ -877,49 +917,49 @@ void wait_SW1_ALL(int feedbackMode = 1, int buzzerHz = 1000, int delayMs = 200)
       {
         tft_.setTextColor(ST77XX_CYAN, ST77XX_BLACK);
         drawString("F0=" + String(ADC_F(0)) + "  ", 0, frontBaseY);
-        if (digitalRead(swpin) == 0)
+        if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
         {
           pinMode(swpin, OUTPUT);
           break;
         }
         drawString("F1=" + String(ADC_F(1)) + "  ", 50, frontBaseY);
-        if (digitalRead(swpin) == 0)
+        if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
         {
           pinMode(swpin, OUTPUT);
           break;
         }
         drawString("F2=" + String(ADC_F(2)) + "  ", 100, frontBaseY);
-        if (digitalRead(swpin) == 0)
+        if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
         {
           pinMode(swpin, OUTPUT);
           break;
         }
         drawString("F3=" + String(ADC_F(3)) + "  ", 0, frontBaseY + 10);
-        if (digitalRead(swpin) == 0)
+        if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
         {
           pinMode(swpin, OUTPUT);
           break;
         }
         drawString("F4=" + String(ADC_F(4)) + "  ", 50, frontBaseY + 10);
-        if (digitalRead(swpin) == 0)
+        if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
         {
           pinMode(swpin, OUTPUT);
           break;
         }
         drawString("F5=" + String(ADC_F(5)) + "  ", 100, frontBaseY + 10);
-        if (digitalRead(swpin) == 0)
+        if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
         {
           pinMode(swpin, OUTPUT);
           break;
         }
         drawString("F6=" + String(ADC_F(6)) + "  ", 0, frontBaseY + 20);
-        if (digitalRead(swpin) == 0)
+        if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
         {
           pinMode(swpin, OUTPUT);
           break;
         }
         drawString("F7=" + String(ADC_F(7)) + "  ", 50, frontBaseY + 20);
-        if (digitalRead(swpin) == 0)
+        if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
         {
           pinMode(swpin, OUTPUT);
           break;
@@ -929,56 +969,56 @@ void wait_SW1_ALL(int feedbackMode = 1, int buzzerHz = 1000, int delayMs = 200)
       {
         tft_.setTextColor(ST77XX_YELLOW, ST77XX_BLACK);
         drawString("B0=" + String(ADC_B(0)) + "  ", 0, backBaseY);
-        if (digitalRead(swpin) == 0)
+        if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
         {
           pinMode(swpin, OUTPUT);
           break;
         }
         drawString("B1=" + String(ADC_B(1)) + "  ", 50, backBaseY);
-        if (digitalRead(swpin) == 0)
+        if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
         {
           pinMode(swpin, OUTPUT);
           break;
         }
         drawString("B2=" + String(ADC_B(2)) + "  ", 100, backBaseY);
-        if (digitalRead(swpin) == 0)
+        if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
         {
           pinMode(swpin, OUTPUT);
           break;
         }
         drawString("B3=" + String(ADC_B(3)) + "  ", 0, backBaseY + 10);
-        if (digitalRead(swpin) == 0)
+        if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
         {
           pinMode(swpin, OUTPUT);
           break;
         }
         drawString("B4=" + String(ADC_B(4)) + "  ", 50, backBaseY + 10);
-        if (digitalRead(swpin) == 0)
+        if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
         {
           pinMode(swpin, OUTPUT);
           break;
         }
         drawString("B5=" + String(ADC_B(5)) + "  ", 100, backBaseY + 10);
-        if (digitalRead(swpin) == 0)
+        if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
         {
           pinMode(swpin, OUTPUT);
           break;
         }
         drawString("B6=" + String(ADC_B(6)) + "  ", 0, backBaseY + 20);
-        if (digitalRead(swpin) == 0)
+        if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
         {
           pinMode(swpin, OUTPUT);
           break;
         }
         drawString("B7=" + String(ADC_B(7)) + "  ", 50, backBaseY + 20);
-        if (digitalRead(swpin) == 0)
+        if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
         {
           pinMode(swpin, OUTPUT);
           break;
         }
         tft_.setTextColor(sw1_gyro_color(), ST77XX_BLACK);
         drawString("G=" + String(Con_yaw_loop1) + "  ", 100, backBaseY + 20);
-        if (digitalRead(swpin) == 0)
+        if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
         {
           pinMode(swpin, OUTPUT);
           break;
@@ -988,7 +1028,7 @@ void wait_SW1_ALL(int feedbackMode = 1, int buzzerHz = 1000, int delayMs = 200)
       {
         tft_.setTextColor(sw1_gyro_color(), ST77XX_BLACK);
         drawString("G=" + String(Con_yaw_loop1) + "  ", 100, frontBaseY + 20);
-        if (digitalRead(swpin) == 0)
+        if (sw1_accept_press(sw1TitleStartMs, &sw1HoldLock))
         {
           pinMode(swpin, OUTPUT);
           break;
@@ -999,7 +1039,7 @@ void wait_SW1_ALL(int feedbackMode = 1, int buzzerHz = 1000, int delayMs = 200)
     uint16_t sw1BlinkColor = ((millis() / 220) % 2) ? sw1TitleBright : sw1TitleDim;
     sw1_draw_countdown_title(sw1Title, 110, sw1BlinkColor, sw1TitleStartMs);
     tft_.setTextColor(ST77XX_WHITE, ST77XX_BLACK);
-  } while (digitalRead(swpin) == 1);
+  } while (!sw1_accept_press(sw1TitleStartMs, &sw1HoldLock));
   pinMode(swpin, OUTPUT);
   // buzzer(500,100);
   // delay(200);
@@ -2217,3 +2257,4 @@ void menu_show(int idx, const char *label)
   int labelY = (3 * H / 4) - (textHeight(labelSize) / 2);
   printText(labelX, labelY, label, labelSize, ST77XX_GREEN);
 }
+

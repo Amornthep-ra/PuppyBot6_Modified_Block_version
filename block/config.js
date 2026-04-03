@@ -32,6 +32,66 @@ module.exports = {
                         </value>
                     </block>`
                 },
+                {
+                    xml:
+                        `<block type="TCS_setColorReadConfig">
+                        <field name="SAMPLES">7</field>
+                        <field name="DELAY_MS">5</field>
+                    </block>`
+                },
+                {
+                    xml:
+                        `<block type="TCS_setColorDetectConfig">
+                        <field name="RED_R">200</field>
+                        <field name="RED_G">62</field>
+                        <field name="RED_B">62</field>
+                        <field name="GREEN_R">80</field>
+                        <field name="GREEN_G">140</field>
+                        <field name="GREEN_B">100</field>
+                        <field name="BLUE_R">80</field>
+                        <field name="BLUE_G">80</field>
+                        <field name="BLUE_B">160</field>
+                        <field name="YELLOW_R">144</field>
+                        <field name="YELLOW_G">113</field>
+                        <field name="YELLOW_B">42</field>
+                        <field name="BLACK_R">133</field>
+                        <field name="BLACK_G">100</field>
+                        <field name="BLACK_B">100</field>
+                        <field name="SUM_MIN">220</field>
+                        <field name="CHROMA_MIN">35</field>
+                        <field name="NORM_DIST_MAX">0.22</field>
+                        <field name="BLACK_NORM_DIST_MAX">0.18</field>
+                        <field name="YELLOW_RG_MIN">180</field>
+                    </block>`
+                },
+                {
+                    xml:
+                        `<block type="TCS_readColorSmoothed">
+    <value name="READ_R"><block type="TCS_color_status"><field name="POS">F</field><field name="_color">0</field></block></value>
+    <value name="READ_G"><block type="TCS_color_status"><field name="POS">F</field><field name="_color">1</field></block></value>
+    <value name="READ_B"><block type="TCS_color_status"><field name="POS">F</field><field name="_color">2</field></block></value>
+</block>`
+                },
+                {
+                    xml:
+                        `<block type="TCS_detectColorFromRGB">
+                        <value name="R">
+                            <block type="variables_get">
+                                <field name="VAR">R_color</field>
+                            </block>
+                        </value>
+                        <value name="G">
+                            <block type="variables_get">
+                                <field name="VAR">G_color</field>
+                            </block>
+                        </value>
+                        <value name="B">
+                            <block type="variables_get">
+                                <field name="VAR">B_color</field>
+                            </block>
+                        </value>
+                    </block>`
+                },
                 'Ultrasonic_sensor',
                 {
                     xml:
@@ -770,28 +830,28 @@ module.exports = {
                     xml:
                         `<block type="PuppyBot_PID_setMin_select">
                             <field name="SIDE">FRONT</field>
-                            <value name="S0"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
-                            <value name="S1"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
-                            <value name="S2"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
-                            <value name="S3"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
-                            <value name="S4"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
-                            <value name="S5"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
-                            <value name="S6"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
-                            <value name="S7"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
+                            <value name="S0"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+                            <value name="S1"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+                            <value name="S2"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+                            <value name="S3"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+                            <value name="S4"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+                            <value name="S5"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+                            <value name="S6"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+                            <value name="S7"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
                         </block>`
                 },
                 {
                     xml:
                         `<block type="PuppyBot_PID_setMax_select">
                             <field name="SIDE">FRONT</field>
-                            <value name="S0"><shadow type="math_number"><field name="NUM">1023</field></shadow></value>
-                            <value name="S1"><shadow type="math_number"><field name="NUM">1023</field></shadow></value>
-                            <value name="S2"><shadow type="math_number"><field name="NUM">1023</field></shadow></value>
-                            <value name="S3"><shadow type="math_number"><field name="NUM">1023</field></shadow></value>
-                            <value name="S4"><shadow type="math_number"><field name="NUM">1023</field></shadow></value>
-                            <value name="S5"><shadow type="math_number"><field name="NUM">1023</field></shadow></value>
-                            <value name="S6"><shadow type="math_number"><field name="NUM">1023</field></shadow></value>
-                            <value name="S7"><shadow type="math_number"><field name="NUM">1023</field></shadow></value>
+                            <value name="S0"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+                            <value name="S1"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+                            <value name="S2"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+                            <value name="S3"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+                            <value name="S4"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+                            <value name="S5"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+                            <value name="S6"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+                            <value name="S7"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
                         </block>`
                 },
                 {
@@ -1493,6 +1553,10 @@ module.exports = {
         }
     ]
 }
+
+
+
+
 
 
 

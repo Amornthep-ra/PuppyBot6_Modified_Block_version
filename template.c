@@ -11,6 +11,7 @@
 #include "PuppyBotTurnPID.h"
 #include "KB_PIDFollowHelpers.h"
 #include "PuppyBotPID_v2.h"
+#include "PuppyBotColorDetect.h"
 
 typedef float Number;
 typedef int Boolean;

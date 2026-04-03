@@ -36,6 +36,67 @@ Blockly.JavaScript['TCS_color_status'] = function(block) {
   return [code, Blockly.JavaScript.ORDER_ATOMIC];
 };
 
+Blockly.JavaScript['TCS_setColorReadConfig'] = function(block) {
+  var samples = block.getFieldValue('SAMPLES') || '7';
+  var delayMs = block.getFieldValue('DELAY_MS') || '5';
+  var code = `setColorReadConfig(${samples}, ${delayMs});\n`;
+  return code;
+};
+
+Blockly.JavaScript['TCS_setColorDetectConfig'] = function(block) {
+  var redR = block.getFieldValue('RED_R') || '200';
+  var redG = block.getFieldValue('RED_G') || '62';
+  var redB = block.getFieldValue('RED_B') || '62';
+  var greenR = block.getFieldValue('GREEN_R') || '80';
+  var greenG = block.getFieldValue('GREEN_G') || '140';
+  var greenB = block.getFieldValue('GREEN_B') || '100';
+  var blueR = block.getFieldValue('BLUE_R') || '80';
+  var blueG = block.getFieldValue('BLUE_G') || '80';
+  var blueB = block.getFieldValue('BLUE_B') || '160';
+  var yellowR = block.getFieldValue('YELLOW_R') || '144';
+  var yellowG = block.getFieldValue('YELLOW_G') || '113';
+  var yellowB = block.getFieldValue('YELLOW_B') || '42';
+  var blackR = block.getFieldValue('BLACK_R') || '133';
+  var blackG = block.getFieldValue('BLACK_G') || '100';
+  var blackB = block.getFieldValue('BLACK_B') || '100';
+  var sumMin = block.getFieldValue('SUM_MIN') || '220';
+  var chromaMin = block.getFieldValue('CHROMA_MIN') || '35';
+  var normDistMax = block.getFieldValue('NORM_DIST_MAX') || '0.22';
+  var blackNormDistMax = block.getFieldValue('BLACK_NORM_DIST_MAX') || '0.18';
+  var yellowRgMin = block.getFieldValue('YELLOW_RG_MIN') || '180';
+  var code = `setColorDetectConfig(${redR}, ${redG}, ${redB}, ${greenR}, ${greenG}, ${greenB}, ${blueR}, ${blueG}, ${blueB}, ${yellowR}, ${yellowG}, ${yellowB}, ${blackR}, ${blackG}, ${blackB}, ${sumMin}, ${chromaMin}, ${normDistMax}, ${blackNormDistMax}, ${yellowRgMin});\n`;
+  return code;
+};
+
+Blockly.JavaScript['TCS_readColorSmoothed'] = function(block) {
+  var readR = Blockly.JavaScript.valueToCode(block, 'READ_R', Blockly.JavaScript.ORDER_NONE) || '0';
+  var readG = Blockly.JavaScript.valueToCode(block, 'READ_G', Blockly.JavaScript.ORDER_NONE) || '0';
+  var readB = Blockly.JavaScript.valueToCode(block, 'READ_B', Blockly.JavaScript.ORDER_NONE) || '0';
+  var varR = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('VAR_R'), Blockly.Variables.NAME_TYPE);
+  var varG = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('VAR_G'), Blockly.Variables.NAME_TYPE);
+  var varB = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('VAR_B'), Blockly.Variables.NAME_TYPE);
+  var tmpR = Blockly.JavaScript.variableDB_.getDistinctName('tmpColorR', Blockly.Variables.NAME_TYPE);
+  var tmpG = Blockly.JavaScript.variableDB_.getDistinctName('tmpColorG', Blockly.Variables.NAME_TYPE);
+  var tmpB = Blockly.JavaScript.variableDB_.getDistinctName('tmpColorB', Blockly.Variables.NAME_TYPE);
+  var code = '';
+  code += `long ${tmpR} = 0;\n`;
+  code += `long ${tmpG} = 0;\n`;
+  code += `long ${tmpB} = 0;\n`;
+  code += `readColorSmoothedCustom([]() -> long { return (long)(${readR}); }, []() -> long { return (long)(${readG}); }, []() -> long { return (long)(${readB}); }, &${tmpR}, &${tmpG}, &${tmpB});\n`;
+  code += `${varR} = ${tmpR};\n`;
+  code += `${varG} = ${tmpG};\n`;
+  code += `${varB} = ${tmpB};\n`;
+  return code;
+};
+
+Blockly.JavaScript['TCS_detectColorFromRGB'] = function(block) {
+  var r = Blockly.JavaScript.valueToCode(block, 'R', Blockly.JavaScript.ORDER_NONE) || '0';
+  var g = Blockly.JavaScript.valueToCode(block, 'G', Blockly.JavaScript.ORDER_NONE) || '0';
+  var b = Blockly.JavaScript.valueToCode(block, 'B', Blockly.JavaScript.ORDER_NONE) || '0';
+  var code = `(detectColorFromRGB(${r}, ${g}, ${b}))`;
+  return [code, Blockly.JavaScript.ORDER_ATOMIC];
+};
+
 Blockly.JavaScript['TCS_color_config'] = function(block) {
   var dropdown_pinSDA = block.getFieldValue('pin_SDA');
   var dropdown_pinSCL = block.getFieldValue('pin_SCL');
@@ -74,9 +135,9 @@ Blockly.JavaScript['IMU_begin'] = function(block) {
   var value_s4 = block.getFieldValue('S4') || '1';
   var code = '';
   if (dropdown_pos_encoder === '0') {
-    code = '#SETUP Set_Mode_Gyro = ('+dropdown_Mode+'); #END\n';
+    code = '#SETUP sw1_enable_gyro_countdown(); Set_Mode_Gyro = ('+dropdown_Mode+'); #END\n';
   } else {
-    code = '#SETUP Set_Mode_Gyro = ('+dropdown_Mode+'); init_encoder('+dropdown_pos_encoder+'); selection_Encoder = ('+dropdown_pos_encoder+');  #END\n';
+    code = '#SETUP sw1_enable_gyro_countdown(); Set_Mode_Gyro = ('+dropdown_Mode+'); init_encoder('+dropdown_pos_encoder+'); selection_Encoder = ('+dropdown_pos_encoder+');  #END\n';
   }
   code += 'set_data_for_turnDirection('+value_s4+','+value_s0+','+value_s1+','+value_s2+','+value_s3+');\n';
   return code;
@@ -500,6 +561,8 @@ Blockly.JavaScript['knob_menu_n'] = function(block) {
 
 
 }
+
+
 
 
 

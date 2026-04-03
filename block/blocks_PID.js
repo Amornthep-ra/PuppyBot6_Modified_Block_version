@@ -22,37 +22,79 @@ module.exports = function (Blockly) {
   };
   Blockly.Blocks['PuppyBot_PID_setPin_select'] = {
     init: function () {
-      this.appendDummyInput()
+      this.appendDummyInput('HEADER')
         .appendField(new Blockly.FieldDropdown([['Front', 'FRONT'], ['Back', 'BACK']]), 'SIDE')
         .appendField('SetPin')
         .appendField(new Blockly.FieldDropdown([['1', '1'], ['2', '2'], ['3', '3'], ['4', '4'], ['5', '5'], ['6', '6'], ['7', '7'], ['8', '8']]), 'numSensor');
-      this.appendDummyInput().appendField('S0_Pin', 'PIN0_LABEL').appendField(new Blockly.FieldDropdown([['-', '19'], ['A0', '0'], ['A1', '1'], ['A2', '2'], ['A3', '3'], ['A4', '4'], ['A5', '5'], ['A6', '6'], ['A7', '7'], ['A8', '8'], ['A9', '9'], ['A10', '10'], ['A11', '11'], ['A12', '12'], ['A13', '13'], ['A14', '14'], ['A15', '15']]), 'S0_Pin');
-      this.appendDummyInput().appendField('S1_Pin', 'PIN1_LABEL').appendField(new Blockly.FieldDropdown([['-', '19'], ['A0', '0'], ['A1', '1'], ['A2', '2'], ['A3', '3'], ['A4', '4'], ['A5', '5'], ['A6', '6'], ['A7', '7'], ['A8', '8'], ['A9', '9'], ['A10', '10'], ['A11', '11'], ['A12', '12'], ['A13', '13'], ['A14', '14'], ['A15', '15']]), 'S1_Pin');
-      this.appendDummyInput().appendField('S2_Pin', 'PIN2_LABEL').appendField(new Blockly.FieldDropdown([['-', '19'], ['A0', '0'], ['A1', '1'], ['A2', '2'], ['A3', '3'], ['A4', '4'], ['A5', '5'], ['A6', '6'], ['A7', '7'], ['A8', '8'], ['A9', '9'], ['A10', '10'], ['A11', '11'], ['A12', '12'], ['A13', '13'], ['A14', '14'], ['A15', '15']]), 'S2_Pin');
-      this.appendDummyInput().appendField('S3_Pin', 'PIN3_LABEL').appendField(new Blockly.FieldDropdown([['-', '19'], ['A0', '0'], ['A1', '1'], ['A2', '2'], ['A3', '3'], ['A4', '4'], ['A5', '5'], ['A6', '6'], ['A7', '7'], ['A8', '8'], ['A9', '9'], ['A10', '10'], ['A11', '11'], ['A12', '12'], ['A13', '13'], ['A14', '14'], ['A15', '15']]), 'S3_Pin');
-      this.appendDummyInput().appendField('S4_Pin', 'PIN4_LABEL').appendField(new Blockly.FieldDropdown([['-', '19'], ['A0', '0'], ['A1', '1'], ['A2', '2'], ['A3', '3'], ['A4', '4'], ['A5', '5'], ['A6', '6'], ['A7', '7'], ['A8', '8'], ['A9', '9'], ['A10', '10'], ['A11', '11'], ['A12', '12'], ['A13', '13'], ['A14', '14'], ['A15', '15']]), 'S4_Pin');
-      this.appendDummyInput().appendField('S5_Pin', 'PIN5_LABEL').appendField(new Blockly.FieldDropdown([['-', '19'], ['A0', '0'], ['A1', '1'], ['A2', '2'], ['A3', '3'], ['A4', '4'], ['A5', '5'], ['A6', '6'], ['A7', '7'], ['A8', '8'], ['A9', '9'], ['A10', '10'], ['A11', '11'], ['A12', '12'], ['A13', '13'], ['A14', '14'], ['A15', '15']]), 'S5_Pin');
-      this.appendDummyInput().appendField('S6_Pin', 'PIN6_LABEL').appendField(new Blockly.FieldDropdown([['-', '19'], ['A0', '0'], ['A1', '1'], ['A2', '2'], ['A3', '3'], ['A4', '4'], ['A5', '5'], ['A6', '6'], ['A7', '7'], ['A8', '8'], ['A9', '9'], ['A10', '10'], ['A11', '11'], ['A12', '12'], ['A13', '13'], ['A14', '14'], ['A15', '15']]), 'S6_Pin');
-      this.appendDummyInput().appendField('S7_Pin', 'PIN7_LABEL').appendField(new Blockly.FieldDropdown([['-', '19'], ['A0', '0'], ['A1', '1'], ['A2', '2'], ['A3', '3'], ['A4', '4'], ['A5', '5'], ['A6', '6'], ['A7', '7'], ['A8', '8'], ['A9', '9'], ['A10', '10'], ['A11', '11'], ['A12', '12'], ['A13', '13'], ['A14', '14'], ['A15', '15']]), 'S7_Pin');
       this.setInputsInline(true);
       this.setPreviousStatement(true, null);
       this.setNextStatement(true, null);
       this.setColour(65);
       this.setTooltip('');
-      this.updatePinLabels_();
-    }
-    ,
-    updatePinLabels_: function () {
+      this.updatePinInputs_();
+    },
+    getPinOptions_: function () {
+      return [['-', '19'], ['A0', '0'], ['A1', '1'], ['A2', '2'], ['A3', '3'], ['A4', '4'], ['A5', '5'], ['A6', '6'], ['A7', '7'], ['A8', '8'], ['A9', '9'], ['A10', '10'], ['A11', '11'], ['A12', '12'], ['A13', '13'], ['A14', '14'], ['A15', '15']];
+    },
+    updatePinInputs_: function () {
       var prefix = this.getFieldValue('SIDE') === 'BACK' ? 'SB' : 'S';
+      var count = parseInt(this.getFieldValue('numSensor') || '1', 10);
+      var currentValues = {};
       for (var i = 0; i < 8; i++) {
-        if (this.getField('PIN' + i + '_LABEL')) {
-          this.setFieldValue(prefix + i + '_Pin', 'PIN' + i + '_LABEL');
+        if (this.getField('S' + i + '_Pin')) {
+          currentValues[i] = this.getFieldValue('S' + i + '_Pin') || '19';
+        }
+      }
+      for (var j = 0; j < 8; j++) {
+        var inputName = 'PIN_INPUT_' + j;
+        if (j < count) {
+          if (!this.getInput(inputName)) {
+            this.appendDummyInput(inputName)
+              .appendField(prefix + j + '_Pin', 'PIN' + j + '_LABEL')
+              .appendField(new Blockly.FieldDropdown(this.getPinOptions_()), 'S' + j + '_Pin');
+          } else if (this.getField('PIN' + j + '_LABEL')) {
+            this.setFieldValue(prefix + j + '_Pin', 'PIN' + j + '_LABEL');
+          }
+          if (this.getField('S' + j + '_Pin')) {
+            this.getField('S' + j + '_Pin').setValue(currentValues[j] || '19');
+          }
+        } else if (this.getInput(inputName)) {
+          this.removeInput(inputName);
+        }
+      }
+    },
+    mutationToDom: function () {
+      var m = document.createElement('mutation');
+      m.setAttribute('side', this.getFieldValue('SIDE') || 'FRONT');
+      m.setAttribute('count', this.getFieldValue('numSensor') || '1');
+      for (var i = 0; i < 8; i++) {
+        if (this.getField('S' + i + '_Pin')) {
+          m.setAttribute('pin' + i, this.getFieldValue('S' + i + '_Pin') || '19');
+        }
+      }
+      return m;
+    },
+    domToMutation: function (xml) {
+      if (!xml) return;
+      var side = xml.getAttribute('side');
+      var count = xml.getAttribute('count');
+      if (side) {
+        try { this.setFieldValue(side, 'SIDE'); } catch (e) { }
+      }
+      if (count) {
+        try { this.setFieldValue(count, 'numSensor'); } catch (e) { }
+      }
+      this.updatePinInputs_();
+      for (var i = 0; i < 8; i++) {
+        var pinValue = xml.getAttribute('pin' + i);
+        if (pinValue && this.getField('S' + i + '_Pin')) {
+          try { this.getField('S' + i + '_Pin').setValue(pinValue); } catch (e) { }
         }
       }
     },
     onchange: function () {
       if (!this.workspace || this.isInFlyout) return;
-      this.updatePinLabels_();
+      this.updatePinInputs_();
     }
   };
   Blockly.Blocks['PuppyBot_PID_setline_color_select'] = {
@@ -119,94 +161,230 @@ module.exports = function (Blockly) {
   };
   Blockly.Blocks['PuppyBot_PID_setMin_select'] = {
     init: function () {
-      this.appendDummyInput()
+      this.appendDummyInput('HEADER')
         .appendField(new Blockly.FieldDropdown([['Front', 'FRONT'], ['Back', 'BACK']]), 'SIDE')
-        .appendField('SetMin');
-      this.appendValueInput('S0').setCheck('Number').appendField('S0', 'S0_LABEL');
-      this.appendValueInput('S1').setCheck('Number').appendField('S1', 'S1_LABEL');
-      this.appendValueInput('S2').setCheck('Number').appendField('S2', 'S2_LABEL');
-      this.appendValueInput('S3').setCheck('Number').appendField('S3', 'S3_LABEL');
-      this.appendValueInput('S4').setCheck('Number').appendField('S4', 'S4_LABEL');
-      this.appendValueInput('S5').setCheck('Number').appendField('S5', 'S5_LABEL');
-      this.appendValueInput('S6').setCheck('Number').appendField('S6', 'S6_LABEL');
-      this.appendValueInput('S7').setCheck('Number').appendField('S7', 'S7_LABEL');
+        .appendField('SetMin(Black) Select')
+        .appendField(new Blockly.FieldDropdown([['1', '1'], ['2', '2'], ['3', '3'], ['4', '4'], ['5', '5'], ['6', '6'], ['7', '7'], ['8', '8']]), 'numSensor');
       this.setInputsInline(true);
       this.setPreviousStatement(true, null);
       this.setNextStatement(true, null);
       this.setColour(65);
       this.setTooltip('');
-      this.updateSensorLabels_();
+      this._autoShadowIds = {};
+      this._customCacheNum = {};
+      this.updateSensorInputs_();
     },
-    updateSensorLabels_: function () {
-      var prefix = this.getFieldValue('SIDE') === 'BACK' ? 'SB' : 'S';
-      for (var i = 0; i < 8; i++) {
-        if (this.getField('S' + i + '_LABEL')) {
-          this.setFieldValue(prefix + i, 'S' + i + '_LABEL');
+    ensureNumberShadow_: function (inputName, defaultNum) {
+      var input = this.getInput(inputName);
+      if (!input || !input.connection || input.connection.targetBlock()) return;
+      var shadowBlock = this.workspace.newBlock('math_number');
+      shadowBlock.setShadow(true);
+      shadowBlock.data = 'PuppyBot_PID_setMin_select_auto_shadow';
+      shadowBlock.setFieldValue(String(defaultNum), 'NUM');
+      var canInitSvg = !!(this.workspace && this.workspace.rendered && this.rendered);
+      if (canInitSvg && shadowBlock.initSvg) shadowBlock.initSvg();
+      input.connection.connect(shadowBlock.outputConnection);
+      this._autoShadowIds[inputName] = shadowBlock.id;
+      if (canInitSvg && shadowBlock.render) shadowBlock.render();
+    },
+    disposeTrackedAuto_: function (inputName) {
+      if (!this.workspace || !this._autoShadowIds) return;
+      var blockId = this._autoShadowIds[inputName];
+      if (!blockId) return;
+      var block = this.workspace.getBlockById(blockId);
+      if (block) block.dispose();
+      delete this._autoShadowIds[inputName];
+    },
+    cacheInputNumber_: function (inputName) {
+      var input = this.getInput(inputName);
+      if (!input || !input.connection) return;
+      var target = input.connection.targetBlock();
+      if (!target) return;
+      if (target.type === 'math_number') {
+        var num = target.getFieldValue('NUM');
+        if (typeof num !== 'undefined' && num !== null && String(num).length > 0) {
+          this._customCacheNum[inputName] = String(num);
         }
       }
+    },
+    updateSensorInputs_: function () {
+      var prefix = this.getFieldValue('SIDE') === 'BACK' ? 'SB' : 'S';
+      var count = parseInt(this.getFieldValue('numSensor') || '1', 10);
+      for (var i = 0; i < 8; i++) {
+        var inputName = 'S' + i;
+        if (i < count) {
+          if (!this.getInput(inputName)) {
+            this.appendValueInput(inputName).setCheck('Number').appendField(prefix + i, 'S' + i + '_LABEL');
+            this.ensureNumberShadow_(inputName, this._customCacheNum[inputName] || '0');
+          } else if (this.getField('S' + i + '_LABEL')) {
+            this.setFieldValue(prefix + i, 'S' + i + '_LABEL');
+          }
+        } else if (this.getInput(inputName)) {
+          this.cacheInputNumber_(inputName);
+          this.disposeTrackedAuto_(inputName);
+          this.removeInput(inputName);
+        }
+      }
+      if (this.rendered) this.render();
     },
     mutationToDom: function () {
       var m = document.createElement('mutation');
       m.setAttribute('side', this.getFieldValue('SIDE') || 'FRONT');
+      m.setAttribute('count', this.getFieldValue('numSensor') || '1');
+      for (var i = 0; i < 8; i++) {
+        var inputName = 'S' + i;
+        var cache = (this._customCacheNum && this._customCacheNum[inputName]) ? this._customCacheNum[inputName] : null;
+        if (!cache) {
+          var input = this.getInput(inputName);
+          if (input && input.connection) {
+            var target = input.connection.targetBlock();
+            if (target && target.type === 'math_number') {
+              cache = target.getFieldValue('NUM') || '0';
+            }
+          }
+        }
+        if (cache !== null && typeof cache !== 'undefined') {
+          m.setAttribute('cache_' + i, String(cache));
+        }
+      }
       return m;
     },
     domToMutation: function (xml) {
       if (!xml) return;
       var side = xml.getAttribute('side');
+      var count = xml.getAttribute('count');
+      if (!this._customCacheNum) this._customCacheNum = {};
+      for (var i = 0; i < 8; i++) {
+        var cache = xml.getAttribute('cache_' + i);
+        if (cache !== null) {
+          this._customCacheNum['S' + i] = String(cache);
+        }
+      }
       if (side) {
         try { this.setFieldValue(side, 'SIDE'); } catch (e) { }
       }
-      this.updateSensorLabels_();
+      if (count) {
+        try { this.setFieldValue(count, 'numSensor'); } catch (e) { }
+      }
+      this.updateSensorInputs_();
     },
     onchange: function () {
       if (!this.workspace || this.isInFlyout) return;
-      this.updateSensorLabels_();
+      this.updateSensorInputs_();
     }
   };
   Blockly.Blocks['PuppyBot_PID_setMax_select'] = {
     init: function () {
-      this.appendDummyInput()
+      this.appendDummyInput('HEADER')
         .appendField(new Blockly.FieldDropdown([['Front', 'FRONT'], ['Back', 'BACK']]), 'SIDE')
-        .appendField('SetMax');
-      this.appendValueInput('S0').setCheck('Number').appendField('S0', 'S0_LABEL');
-      this.appendValueInput('S1').setCheck('Number').appendField('S1', 'S1_LABEL');
-      this.appendValueInput('S2').setCheck('Number').appendField('S2', 'S2_LABEL');
-      this.appendValueInput('S3').setCheck('Number').appendField('S3', 'S3_LABEL');
-      this.appendValueInput('S4').setCheck('Number').appendField('S4', 'S4_LABEL');
-      this.appendValueInput('S5').setCheck('Number').appendField('S5', 'S5_LABEL');
-      this.appendValueInput('S6').setCheck('Number').appendField('S6', 'S6_LABEL');
-      this.appendValueInput('S7').setCheck('Number').appendField('S7', 'S7_LABEL');
+        .appendField('SetMax(White) Select')
+        .appendField(new Blockly.FieldDropdown([['1', '1'], ['2', '2'], ['3', '3'], ['4', '4'], ['5', '5'], ['6', '6'], ['7', '7'], ['8', '8']]), 'numSensor');
       this.setInputsInline(true);
       this.setPreviousStatement(true, null);
       this.setNextStatement(true, null);
       this.setColour(65);
       this.setTooltip('');
-      this.updateSensorLabels_();
+      this._autoShadowIds = {};
+      this._customCacheNum = {};
+      this.updateSensorInputs_();
     },
-    updateSensorLabels_: function () {
-      var prefix = this.getFieldValue('SIDE') === 'BACK' ? 'SB' : 'S';
-      for (var i = 0; i < 8; i++) {
-        if (this.getField('S' + i + '_LABEL')) {
-          this.setFieldValue(prefix + i, 'S' + i + '_LABEL');
+    ensureNumberShadow_: function (inputName, defaultNum) {
+      var input = this.getInput(inputName);
+      if (!input || !input.connection || input.connection.targetBlock()) return;
+      var shadowBlock = this.workspace.newBlock('math_number');
+      shadowBlock.setShadow(true);
+      shadowBlock.data = 'PuppyBot_PID_setMax_select_auto_shadow';
+      shadowBlock.setFieldValue(String(defaultNum), 'NUM');
+      var canInitSvg = !!(this.workspace && this.workspace.rendered && this.rendered);
+      if (canInitSvg && shadowBlock.initSvg) shadowBlock.initSvg();
+      input.connection.connect(shadowBlock.outputConnection);
+      this._autoShadowIds[inputName] = shadowBlock.id;
+      if (canInitSvg && shadowBlock.render) shadowBlock.render();
+    },
+    disposeTrackedAuto_: function (inputName) {
+      if (!this.workspace || !this._autoShadowIds) return;
+      var blockId = this._autoShadowIds[inputName];
+      if (!blockId) return;
+      var block = this.workspace.getBlockById(blockId);
+      if (block) block.dispose();
+      delete this._autoShadowIds[inputName];
+    },
+    cacheInputNumber_: function (inputName) {
+      var input = this.getInput(inputName);
+      if (!input || !input.connection) return;
+      var target = input.connection.targetBlock();
+      if (!target) return;
+      if (target.type === 'math_number') {
+        var num = target.getFieldValue('NUM');
+        if (typeof num !== 'undefined' && num !== null && String(num).length > 0) {
+          this._customCacheNum[inputName] = String(num);
         }
       }
+    },
+    updateSensorInputs_: function () {
+      var prefix = this.getFieldValue('SIDE') === 'BACK' ? 'SB' : 'S';
+      var count = parseInt(this.getFieldValue('numSensor') || '1', 10);
+      for (var i = 0; i < 8; i++) {
+        var inputName = 'S' + i;
+        if (i < count) {
+          if (!this.getInput(inputName)) {
+            this.appendValueInput(inputName).setCheck('Number').appendField(prefix + i, 'S' + i + '_LABEL');
+            this.ensureNumberShadow_(inputName, this._customCacheNum[inputName] || '0');
+          } else if (this.getField('S' + i + '_LABEL')) {
+            this.setFieldValue(prefix + i, 'S' + i + '_LABEL');
+          }
+        } else if (this.getInput(inputName)) {
+          this.cacheInputNumber_(inputName);
+          this.disposeTrackedAuto_(inputName);
+          this.removeInput(inputName);
+        }
+      }
+      if (this.rendered) this.render();
     },
     mutationToDom: function () {
       var m = document.createElement('mutation');
       m.setAttribute('side', this.getFieldValue('SIDE') || 'FRONT');
+      m.setAttribute('count', this.getFieldValue('numSensor') || '1');
+      for (var i = 0; i < 8; i++) {
+        var inputName = 'S' + i;
+        var cache = (this._customCacheNum && this._customCacheNum[inputName]) ? this._customCacheNum[inputName] : null;
+        if (!cache) {
+          var input = this.getInput(inputName);
+          if (input && input.connection) {
+            var target = input.connection.targetBlock();
+            if (target && target.type === 'math_number') {
+              cache = target.getFieldValue('NUM') || '0';
+            }
+          }
+        }
+        if (cache !== null && typeof cache !== 'undefined') {
+          m.setAttribute('cache_' + i, String(cache));
+        }
+      }
       return m;
     },
     domToMutation: function (xml) {
       if (!xml) return;
       var side = xml.getAttribute('side');
+      var count = xml.getAttribute('count');
+      if (!this._customCacheNum) this._customCacheNum = {};
+      for (var i = 0; i < 8; i++) {
+        var cache = xml.getAttribute('cache_' + i);
+        if (cache !== null) {
+          this._customCacheNum['S' + i] = String(cache);
+        }
+      }
       if (side) {
         try { this.setFieldValue(side, 'SIDE'); } catch (e) { }
       }
-      this.updateSensorLabels_();
+      if (count) {
+        try { this.setFieldValue(count, 'numSensor'); } catch (e) { }
+      }
+      this.updateSensorInputs_();
     },
     onchange: function () {
       if (!this.workspace || this.isInFlyout) return;
-      this.updateSensorLabels_();
+      this.updateSensorInputs_();
     }
   };
   Blockly.Blocks['PuppyBot_Run_PID_select'] = {
@@ -934,4 +1112,5 @@ module.exports = function (Blockly) {
 
 
 }
+
 

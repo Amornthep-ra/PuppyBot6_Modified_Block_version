@@ -12,15 +12,15 @@ module.exports = function (Blockly) {
   };
     Blockly.JavaScript['PuppyBot_PID_setPin_select'] = function (block) {
     var side = block.getFieldValue('SIDE');
-    var value_numSensor = block.getFieldValue('numSensor');
-    var value_s0 = block.getFieldValue('S0_Pin');
-    var value_s1 = block.getFieldValue('S1_Pin');
-    var value_s2 = block.getFieldValue('S2_Pin');
-    var value_s3 = block.getFieldValue('S3_Pin');
-    var value_s4 = block.getFieldValue('S4_Pin');
-    var value_s5 = block.getFieldValue('S5_Pin');
-    var value_s6 = block.getFieldValue('S6_Pin');
-    var value_s7 = block.getFieldValue('S7_Pin');
+    var value_numSensor = block.getFieldValue('numSensor') || '1';
+    var value_s0 = block.getFieldValue('S0_Pin') || '19';
+    var value_s1 = block.getFieldValue('S1_Pin') || '19';
+    var value_s2 = block.getFieldValue('S2_Pin') || '19';
+    var value_s3 = block.getFieldValue('S3_Pin') || '19';
+    var value_s4 = block.getFieldValue('S4_Pin') || '19';
+    var value_s5 = block.getFieldValue('S5_Pin') || '19';
+    var value_s6 = block.getFieldValue('S6_Pin') || '19';
+    var value_s7 = block.getFieldValue('S7_Pin') || '19';
     var code = '';
     if (side === 'BACK') {
       code += 'PID_NumPin_B = ' + value_numSensor + ';	';
@@ -68,8 +68,9 @@ module.exports = function (Blockly) {
     var code = (value_side === 'BACK') ? 'Read_sumValue_sensor_B()' : 'Read_sumValue_sensor()';
     return [code, Blockly.JavaScript.ORDER_ATOMIC];
   };
-    Blockly.JavaScript['PuppyBot_PID_setMin_select'] = function (block) {
+  Blockly.JavaScript['PuppyBot_PID_setMin_select'] = function (block) {
     var side = block.getFieldValue('SIDE');
+    var value_numSensor = parseInt(block.getFieldValue('numSensor') || '1', 10);
     var value_s0 = Blockly.JavaScript.valueToCode(block, 'S0', Blockly.JavaScript.ORDER_ATOMIC) || '0';
     var value_s1 = Blockly.JavaScript.valueToCode(block, 'S1', Blockly.JavaScript.ORDER_ATOMIC) || '0';
     var value_s2 = Blockly.JavaScript.valueToCode(block, 'S2', Blockly.JavaScript.ORDER_ATOMIC) || '0';
@@ -78,16 +79,21 @@ module.exports = function (Blockly) {
     var value_s5 = Blockly.JavaScript.valueToCode(block, 'S5', Blockly.JavaScript.ORDER_ATOMIC) || '0';
     var value_s6 = Blockly.JavaScript.valueToCode(block, 'S6', Blockly.JavaScript.ORDER_ATOMIC) || '0';
     var value_s7 = Blockly.JavaScript.valueToCode(block, 'S7', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+    var values = [value_s0, value_s1, value_s2, value_s3, value_s4, value_s5, value_s6, value_s7];
+    for (var i = value_numSensor; i < 8; i++) {
+      values[i] = '0';
+    }
     var code = '';
     if (side === 'BACK') {
-      code += 'PID_set_Min_B(' + value_s0 + ',' + value_s1 + ',' + value_s2 + ',' + value_s3 + ',' + value_s4 + ',' + value_s5 + ',' + value_s6 + ',' + value_s7 + ');\n';
+      code += 'PID_set_Min_B(' + values.join(',') + ');\n';
     } else {
-      code += 'PID_set_Min(' + value_s0 + ',' + value_s1 + ',' + value_s2 + ',' + value_s3 + ',' + value_s4 + ',' + value_s5 + ',' + value_s6 + ',' + value_s7 + ');\n';
+      code += 'PID_set_Min(' + values.join(',') + ');\n';
     }
     return code;
   };
   Blockly.JavaScript['PuppyBot_PID_setMax_select'] = function (block) {
     var side = block.getFieldValue('SIDE');
+    var value_numSensor = parseInt(block.getFieldValue('numSensor') || '1', 10);
     var value_s0 = Blockly.JavaScript.valueToCode(block, 'S0', Blockly.JavaScript.ORDER_ATOMIC) || '0';
     var value_s1 = Blockly.JavaScript.valueToCode(block, 'S1', Blockly.JavaScript.ORDER_ATOMIC) || '0';
     var value_s2 = Blockly.JavaScript.valueToCode(block, 'S2', Blockly.JavaScript.ORDER_ATOMIC) || '0';
@@ -96,11 +102,15 @@ module.exports = function (Blockly) {
     var value_s5 = Blockly.JavaScript.valueToCode(block, 'S5', Blockly.JavaScript.ORDER_ATOMIC) || '0';
     var value_s6 = Blockly.JavaScript.valueToCode(block, 'S6', Blockly.JavaScript.ORDER_ATOMIC) || '0';
     var value_s7 = Blockly.JavaScript.valueToCode(block, 'S7', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+    var values = [value_s0, value_s1, value_s2, value_s3, value_s4, value_s5, value_s6, value_s7];
+    for (var i = value_numSensor; i < 8; i++) {
+      values[i] = '0';
+    }
     var code = '';
     if (side === 'BACK') {
-      code += 'PID_set_Max_B(' + value_s0 + ',' + value_s1 + ',' + value_s2 + ',' + value_s3 + ',' + value_s4 + ',' + value_s5 + ',' + value_s6 + ',' + value_s7 + ');\n';
+      code += 'PID_set_Max_B(' + values.join(',') + ');\n';
     } else {
-      code += 'PID_set_Max(' + value_s0 + ',' + value_s1 + ',' + value_s2 + ',' + value_s3 + ',' + value_s4 + ',' + value_s5 + ',' + value_s6 + ',' + value_s7 + ');\n';
+      code += 'PID_set_Max(' + values.join(',') + ');\n';
     }
     return code;
   };
@@ -356,4 +366,5 @@ Blockly.JavaScript['PID_follow_line_cross'] = function(block) {
 };
 
 }
+
 

@@ -223,9 +223,129 @@ module.exports = function (Blockly) {
         .appendField("at")
         .appendField(new Blockly.FieldDropdown([["R", "0"], ["G", "1"], ["B", "2"], ["colorTemp", "3"], ["lux", "4"], ["clear", "5"], ["rawR", "6"], ["rawG", "7"], ["rawB", "8"]]), "_color");
       this.setInputsInline(true);
-      this.setOutput(true, "Number");
+      this.setOutput(true, ['Number', 'TCS_COLOR_STATUS']);
       this.setColour(65);
       this.setTooltip("color");
+      this.setHelpUrl("");
+    }
+  };
+
+  Blockly.Blocks['TCS_setColorReadConfig'] = {
+    init: function () {
+      this.appendDummyInput()
+        .appendField("setColorReadConfig")
+        .appendField("samples=")
+        .appendField(new Blockly.FieldNumber(7, 1), "SAMPLES")
+        .appendField("delay ms=")
+        .appendField(new Blockly.FieldNumber(5, 0), "DELAY_MS");
+      this.setInputsInline(true);
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour(65);
+      this.setTooltip("Configure smoothed RGB sampling count and delay.");
+      this.setHelpUrl("");
+    }
+  };
+
+  Blockly.Blocks['TCS_setColorDetectConfig'] = {
+    init: function () {
+      this.appendDummyInput()
+        .appendField("setColorDetectConfig red")
+        .appendField("r=")
+        .appendField(new Blockly.FieldNumber(200), "RED_R")
+        .appendField("g=")
+        .appendField(new Blockly.FieldNumber(62), "RED_G")
+        .appendField("b=")
+        .appendField(new Blockly.FieldNumber(62), "RED_B");
+      this.appendDummyInput()
+        .appendField("green")
+        .appendField("r=")
+        .appendField(new Blockly.FieldNumber(80), "GREEN_R")
+        .appendField("g=")
+        .appendField(new Blockly.FieldNumber(140), "GREEN_G")
+        .appendField("b=")
+        .appendField(new Blockly.FieldNumber(100), "GREEN_B");
+      this.appendDummyInput()
+        .appendField("blue")
+        .appendField("r=")
+        .appendField(new Blockly.FieldNumber(80), "BLUE_R")
+        .appendField("g=")
+        .appendField(new Blockly.FieldNumber(80), "BLUE_G")
+        .appendField("b=")
+        .appendField(new Blockly.FieldNumber(160), "BLUE_B");
+      this.appendDummyInput()
+        .appendField("yellow")
+        .appendField("r=")
+        .appendField(new Blockly.FieldNumber(144), "YELLOW_R")
+        .appendField("g=")
+        .appendField(new Blockly.FieldNumber(113), "YELLOW_G")
+        .appendField("b=")
+        .appendField(new Blockly.FieldNumber(42), "YELLOW_B");
+      this.appendDummyInput()
+        .appendField("black")
+        .appendField("r=")
+        .appendField(new Blockly.FieldNumber(133), "BLACK_R")
+        .appendField("g=")
+        .appendField(new Blockly.FieldNumber(100), "BLACK_G")
+        .appendField("b=")
+        .appendField(new Blockly.FieldNumber(100), "BLACK_B");
+      this.appendDummyInput()
+        .appendField("sum min=")
+        .appendField(new Blockly.FieldNumber(220), "SUM_MIN")
+        .appendField("chroma min=")
+        .appendField(new Blockly.FieldNumber(35), "CHROMA_MIN")
+        .appendField("norm dist max=")
+        .appendField(new Blockly.FieldNumber(0.22), "NORM_DIST_MAX");
+      this.appendDummyInput()
+        .appendField("black norm dist max=")
+        .appendField(new Blockly.FieldNumber(0.18), "BLACK_NORM_DIST_MAX")
+        .appendField("yellow rg min=")
+        .appendField(new Blockly.FieldNumber(180), "YELLOW_RG_MIN");
+      this.setInputsInline(false);
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour(65);
+      this.setTooltip("Configure color reference samples and thresholds.");
+      this.setHelpUrl("");
+    }
+  };
+
+  Blockly.Blocks['TCS_readColorSmoothed'] = {
+  init: function () {
+    this.appendValueInput('READ_R').setCheck(['Number', 'TCS_COLOR_STATUS'])
+      .appendField('readColorSmoothed r');
+    this.appendValueInput('READ_G').setCheck(['Number', 'TCS_COLOR_STATUS'])
+      .appendField('g');
+    this.appendValueInput('READ_B').setCheck(['Number', 'TCS_COLOR_STATUS'])
+      .appendField('b');
+    this.appendDummyInput()
+      .appendField('R_color')
+      .appendField(new Blockly.FieldVariable('R_color'), 'VAR_R')
+      .appendField('G_color')
+      .appendField(new Blockly.FieldVariable('G_color'), 'VAR_G')
+      .appendField('B_color')
+      .appendField(new Blockly.FieldVariable('B_color'), 'VAR_B');
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(65);
+    this.setTooltip('Read smoothed RGB values from user-selected RGB source blocks and store into variables.');
+    this.setHelpUrl('');
+  }
+};
+
+  Blockly.Blocks['TCS_detectColorFromRGB'] = {
+    init: function () {
+      this.appendValueInput("R").setCheck("Number")
+        .appendField("detectColorFromRGB r");
+      this.appendValueInput("G").setCheck("Number")
+        .appendField("g");
+      this.appendValueInput("B").setCheck("Number")
+        .appendField("b");
+      this.setInputsInline(true);
+      this.setOutput(true, "Number");
+      this.setColour(65);
+      this.setTooltip("Detect colorId from RGB values using current color config. 0=none, 1=red, 2=green, 3=blue, 4=yellow");
       this.setHelpUrl("");
     }
   };
@@ -885,6 +1005,10 @@ module.exports = function (Blockly) {
 
 
 }
+
+
+
+
 
 
 
